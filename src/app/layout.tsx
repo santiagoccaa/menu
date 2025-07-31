@@ -5,7 +5,7 @@ import "./globals.css";
 const fontPoppins = Poppins({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-  weight:["300","400","600","800"]
+  weight: ["300", "400", "600", "800"]
 });
 
 
@@ -24,7 +24,9 @@ export default function RootLayout({
       <body
         className={`${fontPoppins.className} antialiased`}
       >
-        {children}
+        <main className="container mx-auto bg-background min-h-screen text-white">
+          {children}
+        </main>
       </body>
     </html>
   );

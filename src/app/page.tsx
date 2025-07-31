@@ -1,7 +1,12 @@
+import { Menu } from "@/modules";
+
 export default function Home() {
   return (
-    <div>
-      menu
-    </div>
+    <>
+      <header className="flext text-center p-4">
+        <h1 className="text-2xl">Menu</h1>
+      </header>
+      <Menu />
+    </>
   );
 }
