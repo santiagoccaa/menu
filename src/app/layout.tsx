@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
+import Navbar from "@/components/Navbar";
 
 const fontPoppins = Poppins({
   variable: "--font-geist-sans",
@@ -25,6 +26,7 @@ export default function RootLayout({
         className={`${fontPoppins.className} antialiased`}
       >
         <main className="container mx-auto bg-background min-h-screen text-white">
+          <Navbar />
           {children}
         </main>
       </body>
