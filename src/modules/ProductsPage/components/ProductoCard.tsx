@@ -1,13 +1,8 @@
+import { Product } from "@/types/product";
 import Image from "next/image";
 
 interface ProductoCardProps {
-  product: {
-    name: string;
-    ingredients: string[];
-    cost: number;
-    image: string;
-    category: string
-  }
+  product: Product
 }
 
 const ProductoCard = ({ product }: ProductoCardProps) => {
