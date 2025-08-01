@@ -3,6 +3,7 @@
 import { Category } from "@/types/product"
 import { supabase } from "@/lib/client"
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 
 const AdminPage = () => {
 
@@ -49,13 +50,13 @@ const AdminPage = () => {
                 {categories.length === 0 ? (
                     <p className="text-white text-sm italic mt-4">No hay categorías registradas.</p>
                 ) : (
-                    <ul className="text-white">
+                    <div className="text-white grid grid-cols-1 md:grid-cols-3 gap-4">
                         {categories.map((cat, idx) => (
-                            <li key={idx} className="py-2 border-b border-white">
+                            <Link href={`/admin/${cat.name}`} key={idx} className="py-2 border-b border-white text-center">
                                 {cat.name}
-                            </li>
+                            </Link>
                         ))}
-                    </ul>
+                    </div>
                 )}
             </div>
 
