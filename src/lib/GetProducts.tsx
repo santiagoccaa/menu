@@ -18,8 +18,7 @@ const InsertProduct = () => {
   async function handleFormSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
 
-    console.log("Enviando a Supabase:", JSON.stringify(form, null, 2));
-    const { error } = await supabase.from<Product>("productos").insert([form])
+    const { error } = await supabase.from("productos").insert([form])
 
     if (error) {
       console.log("ERROR", error.message);

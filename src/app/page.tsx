@@ -1,5 +1,3 @@
-
-import GetProducts from "@/lib/GetProducts";
 import { Menu } from "@/modules";
 
 export default function Home() {
@@ -9,7 +7,6 @@ export default function Home() {
         <h1 className="text-2xl">Menu</h1>
       </header>
       <Menu />
-      <GetProducts />
     </>
   );
 }
