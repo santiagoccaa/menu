@@ -4,15 +4,16 @@ import { Category } from "@/types/product"
 import { supabase } from "@/lib/client"
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
+import { TbLoader2 } from "react-icons/tb";
 
 const AdminPage = () => {
 
     const [categories, setCategories] = useState<Category[]>([])
+    const [isLoading, setIsLoading] = useState(false)
 
     async function fetchCategories() {
         const { data, error } = await supabase.from("categorias").select("*")
-        if (error) console.error(error)
-        else setCategories(data as Category[])
+        if (!error) setCategories(data as Category[])
     }
 
     useEffect(() => {
@@ -25,10 +26,16 @@ const AdminPage = () => {
 
     async function handleFormSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault()
+        setIsLoading(true)
         const { error } = await supabase.from("categorias").insert([formCategory])
         if (!error) {
-            setFormCategory({ name: "" })
-            fetchCategories()
+            await fetchCategories()
+            setTimeout(() => {
+                setFormCategory({ name: "" })
+                setIsLoading(false)
+            }, 500)
+        } else {
+            setIsLoading(false)
         }
     }
     return (
@@ -41,7 +48,15 @@ const AdminPage = () => {
                         value={formCategory.name}
                         onChange={(e) => setFormCategory({ ...formCategory, name: e.target.value })}
                     />
-                    <input type="submit" value="Guardar" className="bg-blue-500 rounded-lg cursor-pointer p-2" />
+                    <button type="submit" className="bg-blue-500 rounded-lg cursor-pointer p-2" >
+                        {
+                            isLoading 
+                            ? 
+                            <TbLoader2 className="animate-spin" />
+                            :
+                            "Guardar"
+                        }
+                    </button>
                 </form>
             </div>
 
