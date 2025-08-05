@@ -1,9 +1,11 @@
 "use client"
 
+import { supabase } from '@/lib/client'
 import { GetProductsId, InsertProduct } from '@/lib/supabase'
 import { Product } from '@/types/product'
+import Image from 'next/image'
 import { useParams } from 'next/navigation'
-import React, { FormEvent, useEffect, useState } from 'react'
+import React, { FormEvent, useEffect, useRef, useState } from 'react'
 import { TbLoader2 } from 'react-icons/tb'
 
 const PageProducts = () => {
@@ -20,8 +22,32 @@ const PageProducts = () => {
     ingredients: [],
     cost: 0,
     category: category,
-    image: ""
+    image: null
   })
+
+  const imageInputRed = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const { data, error } = await supabase.storage
+        .from("menu-image")
+        .upload(`${Date.now()}-${file.name}`, file);
+
+      if (error) throw error;
+
+      const { data: publicUrlData } = supabase.storage
+        .from("menu-image")
+        .getPublicUrl(data.path);
+
+      setForm({ ...form, image: publicUrlData.publicUrl });
+    } catch (err) {
+      console.error("Error subiendo imagen:", err);
+    }
+  };
+
 
   async function handleFormSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -37,7 +63,7 @@ const PageProducts = () => {
           ingredients: [],
           cost: 0,
           category: category,
-          image: ""
+          image: null
         })
         setIsLoading(false)
       }, 500)
@@ -46,6 +72,7 @@ const PageProducts = () => {
       setIsLoading(false)
     }
   }
+
   return (
     <div>
       <form onSubmit={handleFormSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-8">
@@ -94,12 +121,19 @@ const PageProducts = () => {
         <div>
           <label className="text-white text-sm font-bold block">image</label>
           <input
-            type="text"
-            name="image"
-            value={form.image}
-            className="w-56 border-1 border-white  text-sm p-1 rounded-md"
-            onChange={(e) => setForm({ ...form, image: e.target.value })}
+            type="file"
+            ref={imageInputRed}
+            className="hidden"
+            onChange={handleImageUpload}
           />
+
+          <button
+            type='button'
+            className="w-56 border-1 border-white  text-sm p-1 rounded-md"
+            onClick={() => imageInputRed.current?.click()}
+          >
+            Subir Imagen
+          </button>
         </div>
 
         <button type="submit" value="Guardar" className="bg-blue-500 border-1 border-blue-500 w-52 rounded-md cursor-pointer hover:bg-white hover:text-blue-500 font-bold duration-300 h-12" >
@@ -123,7 +157,9 @@ const PageProducts = () => {
                 <h2>{cat.name}</h2>
                 <p>{cat.ingredients}</p>
                 <h2>{cat.cost}</h2>
-                <h2>{cat.image}</h2>
+                {cat.image && (
+                  <Image src={cat.image} width={300} height={300} alt="asd" />
+                )}
               </div>
             ))}
           </div>

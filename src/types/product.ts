@@ -4,7 +4,7 @@ export interface Product {
     ingredients: string[];
     cost: number;
     category: string;
-    image: string
+    image: string | null
 }
 
 export interface Category{
