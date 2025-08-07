@@ -20,3 +20,11 @@ export async function fetchProducts() {
 export async function InsertProduct(product: Product) {
     await supabase.from("productos").insert([product])
 }
+
+// DELETE
+
+export async function deleteProduct(id: number) {
+    await supabase.from("productos").delete().eq("id", id)
+}
+
+
