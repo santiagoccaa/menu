@@ -1,8 +1,8 @@
-import PageProducts from '@/modules/AdminPage/components/GetProducts'
+import { ProductList } from '@/modules'
 
 const GetProductsPage = () => {
   return (
-    <PageProducts />
+    <ProductList />
   )
 }
 

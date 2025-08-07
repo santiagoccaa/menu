@@ -1,65 +1,27 @@
 "use client"
 
 import { Category } from "@/types/product"
-import { supabase } from "@/lib/client"
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { TbLoader2 } from "react-icons/tb";
+import { fetchCategories } from "@/lib/service";
+import AddCategory from "./components/AddCategory";
 
 const AdminPage = () => {
 
     const [categories, setCategories] = useState<Category[]>([])
-    const [isLoading, setIsLoading] = useState(false)
 
-    async function fetchCategories() {
-        const { data, error } = await supabase.from("categorias").select("*")
-        if (!error) setCategories(data as Category[])
+    const getCategories = async () => {
+        const data = await fetchCategories()
+        if (data) setCategories(data)
     }
 
     useEffect(() => {
-        fetchCategories()
+        getCategories()
     }, [])
 
-    const [formCategory, setFormCategory] = useState<Category>({
-        name: ""
-    })
-
-    async function handleFormSubmit(e: FormEvent<HTMLFormElement>) {
-        e.preventDefault()
-        setIsLoading(true)
-        const { error } = await supabase.from("categorias").insert([formCategory])
-        if (!error) {
-            await fetchCategories()
-            setTimeout(() => {
-                setFormCategory({ name: "" })
-                setIsLoading(false)
-            }, 500)
-        } else {
-            setIsLoading(false)
-        }
-    }
     return (
         <div className='mx-4 border-t border-white flex flex-col'>
-            <div className="py-8 flex justify-center w-full">
-                <form onSubmit={handleFormSubmit} className="flex gap-4 items-center">
-                    <input
-                        type="text"
-                        className="border-white border-1 rounded-lg p-2" placeholder="Nombre de la Categoria"
-                        value={formCategory.name}
-                        onChange={(e) => setFormCategory({ ...formCategory, name: e.target.value })}
-                    />
-                    <button type="submit" className="bg-blue-500 rounded-lg cursor-pointer p-2" >
-                        {
-                            isLoading 
-                            ? 
-                            <TbLoader2 className="animate-spin" />
-                            :
-                            "Guardar"
-                        }
-                    </button>
-                </form>
-            </div>
-
+            <AddCategory onSuccess={getCategories} />
             {/* TODO: add filter name and date */}
             <div className="w-full border-t-2 border-white mt-4 px-4">
                 {categories.length === 0 ? (
@@ -74,7 +36,6 @@ const AdminPage = () => {
                     </div>
                 )}
             </div>
-
         </div>
     )
 }

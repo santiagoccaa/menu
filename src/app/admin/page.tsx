@@ -1,4 +1,5 @@
-import AdminPage from '@/modules/AdminPage/AdminPage'
+import { AdminPage } from "@/modules"
+
 
 const Admin = () => {
   return (
