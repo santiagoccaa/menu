@@ -8,19 +8,22 @@ import AddProducts from './components/AddProducts'
 import { TbEdit } from "react-icons/tb";
 import { AiFillSetting } from "react-icons/ai";
 import { GoTrash } from "react-icons/go";
+import { useParams } from 'next/navigation'
 
 const ProductList = () => {
+    const category = useParams().slug as string
+
     const [productList, setProductList] = useState<Product[]>([])
     const [editProductId, setEditProductId] = useState<number | null>(null)
 
     const getProducts = async () => {
-        const data = await fetchProducts()
+        const data = await fetchProducts(category)
         if (data) setProductList(data)
     }
 
     useEffect(() => {
         getProducts()
-    }, [])
+    })
 
     const toggleEdit = (idx: number) => {
         setEditProductId(prev => (prev === idx ? null : idx))

@@ -7,6 +7,7 @@ export interface Product {
     image: string | null
 }
 
-export interface Category{
+export interface Category {
+    id?: number
     name: string
 }
