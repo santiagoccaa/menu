@@ -3,7 +3,7 @@
 import { deleteProduct, EditProduct, fetchProducts } from '@/lib/service'
 import { Product } from '@/types/product'
 import Image from 'next/image'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import AddProducts from './components/AddProducts'
 import { TbEdit, TbLoader2 } from "react-icons/tb";
 import { AiFillSetting } from "react-icons/ai";
@@ -23,14 +23,14 @@ const ProductList = () => {
 
     const editImage = useRef<HTMLInputElement>(null)
 
-    const getProducts = async () => {
+    const getProducts = useCallback(async () => {
         const data = await fetchProducts(categoria)
         if (data) setProductList(data)
-    }
+    }, [categoria])
 
     useEffect(() => {
         getProducts()
-    }, [])
+    }, [getProducts])
 
     const toggleEdit = (idx: number) => {
         setEditProductId(prev => (prev === idx ? null : idx))
