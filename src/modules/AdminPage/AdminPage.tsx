@@ -70,7 +70,7 @@ const AdminPage = () => {
                                                         if (category.id && editCategoryName.trim() !== "") {
                                                             setLoading(true)
                                                             EditCategory(category.id, editCategoryName.trim());
-                                                            
+
                                                             setTimeout(() => {
                                                                 setEditCategory(null);
                                                                 getCategories();
@@ -97,7 +97,7 @@ const AdminPage = () => {
                                                 </button>
                                             }
                                         </div>
-                                        <div className={`flex gap-8 px-8 h-full items-center bg-white`}>
+                                        <div className={`flex gap-8 px-8 h-full items-center ${settingsCategory !== idx && 'hidden'}`}>
                                             <button className='cursor-pointer text-gray-800 0 hover:scale-110 transition-all duration-300'>
                                                 <TbEdit
                                                     onClick={() => {

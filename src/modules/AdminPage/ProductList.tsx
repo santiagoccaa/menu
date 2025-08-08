@@ -175,7 +175,7 @@ const ProductList = () => {
                                             }
                                         </div>
 
-                                        <div className={`flex gap-8 px-8 h-full items-center bg-white`}>
+                                        <div className={`flex gap-8 px-8 h-full items-center bg-white ${editProductId !== idx && 'hidden'}`}>
                                             <button
                                                 onClick={() => {
                                                     setEditProduct(idx)
