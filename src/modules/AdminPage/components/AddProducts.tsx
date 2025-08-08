@@ -3,16 +3,15 @@
 import { supabase } from '@/lib/client'
 import { InsertProduct } from '@/lib/service'
 import { Product } from '@/types/product'
-import { useParams } from 'next/navigation'
 import React, { FormEvent, useRef, useState } from 'react'
 import { TbLoader2 } from 'react-icons/tb'
 
 interface AddProductProp {
-  onSuccess: () => void
+  onSuccess: () => void;
+  category:string
 }
 
-const AddProducts = ({ onSuccess }: AddProductProp) => {
-  const category = useParams().slug as string
+const AddProducts = ({ onSuccess, category }: AddProductProp) => {
   const [isLoading, setIsLoading] = useState(false)
 
   const [form, setForm] = useState<Product>({
@@ -45,7 +44,6 @@ const AddProducts = ({ onSuccess }: AddProductProp) => {
       console.error("Error subiendo imagen:", err);
     }
   };
-
 
   async function handleFormSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
