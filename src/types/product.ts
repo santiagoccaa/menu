@@ -5,6 +5,7 @@ export interface Product {
     cost: number;
     category: string;
     image: string | null
+    stock?: boolean
 }
 
 export interface Category {
