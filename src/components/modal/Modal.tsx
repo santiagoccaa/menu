@@ -14,12 +14,11 @@ const customStyles = {
         padding: 0,
     },
     overlay: {
-        backgroundColor: 'rgba(0, 0, 0, 0.05)', // bg-black bg-opacity-5
-        backdropFilter: 'blur(2px)',            // backdrop-blur-[2px]
-        WebkitBackdropFilter: 'blur(2px)',      // para Safari
+        backgroundColor: 'rgba(0, 0, 0, 0.05)',
+        backdropFilter: 'blur(2px)',
+        WebkitBackdropFilter: 'blur(2px)',
     },
 };
-
 
 Modal.setAppElement('#root');
 
@@ -51,8 +50,47 @@ const ModalProduct = ({ closeModal, openModal, product }: ModalProps) => {
         const value = e.target.value;
         if (value === "promocion") {
             setInputType("text");
+            setInputValue("");
+            setOfert("")
         } else if (value === "descuento") {
             setInputType("number");
+            setInputValue("");
+            setOfert("")
+        }
+    };
+
+    const formatTextInput = (value: string, previousValue: string): string => {
+        const isDeleting = value.length < previousValue.length;
+        const numbersOnly = value.replace(/[^0-9]/g, '');
+
+        if (numbersOnly.length === 0) return '';
+
+        if (isDeleting && numbersOnly.length === 1) {
+            if (previousValue.length === 3) {
+                return numbersOnly + 'x';
+            }
+            return numbersOnly;
+        }
+        if (numbersOnly.length === 1) return numbersOnly + 'x';
+        if (numbersOnly.length >= 2) return numbersOnly[0] + 'x' + numbersOnly[1];
+
+        return numbersOnly;
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+
+        if (inputType === "text") {
+            const currentValue = String(inputValue);
+            const formattedValue = formatTextInput(value, currentValue);
+            setInputValue(formattedValue);
+        } else if (inputType === "number") {
+            if (value === "" || value === null || value === undefined) {
+                setInputValue("");
+            } else {
+                const numValue = Number(value);
+                setInputValue(isNaN(numValue) ? "" : numValue);
+            }
         }
     };
 
@@ -78,6 +116,7 @@ const ModalProduct = ({ closeModal, openModal, product }: ModalProps) => {
                         closeModal()
                         setOfert("")
                         setInputType("hidden")
+                        setInputValue("")
                     }}>
                         <RiCloseLargeFill size={25} />
                     </button>
@@ -135,10 +174,9 @@ const ModalProduct = ({ closeModal, openModal, product }: ModalProps) => {
                         type={inputType}
                         className="rounded-lg bg-white text-gray-800 p-1 w-20"
                         placeholder={inputType === "number" ? "20%" : "2x1"}
-                        onChange={(e) => {
-                            const value = e.target.value
-                            setInputValue(inputType === "number" ? Number(value) : value)
-                        }}
+                        value={inputValue}
+                        onChange={handleInputChange}
+                        maxLength={inputType === "text" ? 3 : undefined}
                     />
                 </div>
                 <div className='flex pt-4 w-full justify-center items-center'>
