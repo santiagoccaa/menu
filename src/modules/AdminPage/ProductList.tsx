@@ -49,7 +49,7 @@ const ProductList = () => {
                 ) : (
                     <div className="text-white grid grid-cols-1 md:grid-cols-2 gap-4">
                         {productList.map((product, idx) => (
-                            <div key={idx} className="relative py-2 border-b border-white text-center flex bg-gray-800 rounded-lg p-2">
+                            <div key={idx} className={`relative py-2 border-b border-white text-center flex bg-gray-800 rounded-lg p-2 ${!product.stock && 'opacity-70 grayscale-50'}`}>
                                 {editProduct === idx
                                     ?
                                     <>
@@ -116,10 +116,9 @@ const ProductList = () => {
                                             />
                                         </div>
                                     </>
-
                                     :
                                     <>
-                                        <div className='w-40'>
+                                        <div className="w-40">
                                             {product.image && (
                                                 <Image src={product.image} width={300} height={300} alt="asd" className='w-full h-40' />
                                             )}
@@ -200,9 +199,12 @@ const ProductList = () => {
                                             <button
                                                 className='cursor-pointer text-gray-800 0 hover:scale-110 transition-all duration-300'
                                                 onClick={() => {
-                                                    if (product.id ) {
+                                                    if (product.id) {
                                                         hiddenProduct(product.id, !product.stock)
-                                                    } 
+                                                        setTimeout(() => {
+                                                            getProducts()
+                                                        }, 1000);
+                                                    }
                                                 }}
                                             >
                                                 <MdOutlineNotInterested size={20} />
