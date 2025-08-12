@@ -9,7 +9,7 @@ import { TbEdit, TbLoader2 } from "react-icons/tb";
 import { AiFillSetting } from "react-icons/ai";
 import { GoTrash } from "react-icons/go";
 import { useParams } from 'next/navigation'
-import { MdOutlineSaveAlt } from "react-icons/md";
+import { MdOutlineSaveAlt, MdOutlineNotInterested } from "react-icons/md";
 import { supabase } from '@/lib/client'
 
 const ProductList = () => {
@@ -34,6 +34,10 @@ const ProductList = () => {
 
     const toggleEdit = (idx: number) => {
         setEditProductId(prev => (prev === idx ? null : idx))
+    }
+
+    const hiddenProduct = async (id: number, stock: boolean) => {
+        await supabase.from('productos').update({ stock: stock }).eq("id", id)
     }
 
     return (
@@ -127,10 +131,13 @@ const ProductList = () => {
                                         </div>
                                     </>
                                 }
+                                <div className='absolute top-4 right-4'>
+                                    {!product.stock && <h3 className='text-red-500 font-bold'>Agotado</h3>}
+                                </div>
                                 <div
-                                    className={`absolute overflow-hidden bottom-2 right-2 ${editProductId === idx ? 'w-48' : 'w-12'} h-12 rounded-full bg-red-400 transition-all duration-300`}
+                                    className={`absolute overflow-hidden bottom-2 right-2 ${editProductId === idx ? 'w-56' : 'w-12'} h-12 rounded-full transition-all duration-300`}
                                 >
-                                    <div className='relative bg-red-400 w-full h-12'>
+                                    <div className='relative w-full h-12'>
                                         <div className="absolute top-0 right-0 rounded-full bg-blue-400 w-12 h-12 border-1">
                                             {
                                                 editProduct === idx
@@ -174,8 +181,8 @@ const ProductList = () => {
                                                     </button>
                                             }
                                         </div>
-
-                                        <div className={`flex gap-8 px-8 h-full items-center bg-white ${editProductId !== idx && 'hidden'}`}>
+                                        {/* SETTINGS PRODUCTS */}
+                                        <div className={`flex gap-4 px-8 h-full items-center bg-white ${editProductId !== idx && 'hidden'}`}>
                                             <button
                                                 onClick={() => {
                                                     setEditProduct(idx)
@@ -189,6 +196,16 @@ const ProductList = () => {
                                                 }}
                                                 className='cursor-pointer text-gray-800 0 hover:scale-110 transition-all duration-300'>
                                                 <TbEdit size={20} />
+                                            </button>
+                                            <button
+                                                className='cursor-pointer text-gray-800 0 hover:scale-110 transition-all duration-300'
+                                                onClick={() => {
+                                                    if (product.id ) {
+                                                        hiddenProduct(product.id, !product.stock)
+                                                    } 
+                                                }}
+                                            >
+                                                <MdOutlineNotInterested size={20} />
                                             </button>
                                             <button
                                                 className='cursor-pointer text-gray-800 
