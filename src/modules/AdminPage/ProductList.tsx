@@ -11,6 +11,7 @@ import { GoTrash } from "react-icons/go";
 import { useParams } from 'next/navigation'
 import { MdOutlineSaveAlt, MdOutlineNotInterested, MdOutlineDiscount } from "react-icons/md";
 import { supabase } from '@/lib/client'
+import ModalProduct from '@/components/modal/Modal'
 
 const ProductList = () => {
     const categoria = useParams().slug as string
@@ -20,6 +21,13 @@ const ProductList = () => {
     const [editProduct, setEditProduct] = useState<number | null>(null)
     const [editProductData, setEditProductData] = useState<Partial<Product>>({})
     const [loading, setLoading] = useState(false)
+    const [openModal, setOpenModal] = useState(false)
+    const [selectedProduct, setSelectedProduct] = useState<{
+        id: number;
+        name: string;
+        image: string;
+        cost: number
+    } | null>(null);
 
     const editImage = useRef<HTMLInputElement>(null)
 
@@ -43,6 +51,13 @@ const ProductList = () => {
     return (
         <div>
             <AddProducts onSuccess={getProducts} category={categoria} />
+
+            {/* Modal Ofert */}
+            <ModalProduct
+                openModal={openModal}
+                closeModal={() => setOpenModal(!openModal)}
+                product={selectedProduct}
+            />
             <div className="w-full border-t-2 border-white mt-4 px-4">
                 {productList.length === 0 ? (
                     <p className="text-white text-sm italic mt-4">No hay productos registrados.</p>
@@ -182,6 +197,7 @@ const ProductList = () => {
                                         </div>
                                         {/* SETTINGS PRODUCTS */}
                                         <div className={`flex gap-6 px-8 h-full items-center bg-white ${editProductId !== idx && 'hidden'}`}>
+                                            {/* Edit Product */}
                                             <button
                                                 onClick={() => {
                                                     setEditProduct(idx)
@@ -196,6 +212,7 @@ const ProductList = () => {
                                                 className='cursor-pointer text-gray-800 0 hover:scale-110 transition-all duration-300'>
                                                 <TbEdit size={20} />
                                             </button>
+                                            {/* Hidden product */}
                                             <button
                                                 className='cursor-pointer text-gray-800 0 hover:scale-110 transition-all duration-300'
                                                 onClick={() => {
@@ -209,11 +226,22 @@ const ProductList = () => {
                                             >
                                                 <MdOutlineNotInterested size={20} />
                                             </button>
+                                            {/* Aplicate ofert */}
                                             <button
                                                 className='cursor-pointer text-gray-800 0 hover:scale-110 transition-all duration-300'
-                                                >
+                                                onClick={() => {
+                                                    setSelectedProduct({
+                                                        id: product.id!,
+                                                        name: product.name,
+                                                        image: product.image!,
+                                                        cost: product.cost
+                                                    })
+                                                    setOpenModal(!openModal)
+                                                }}
+                                            >
                                                 <MdOutlineDiscount size={20} />
                                             </button>
+                                            {/* Delete Product */}
                                             <button
                                                 className='cursor-pointer text-gray-800 
                                             hover:scale-110 transition-all duration-300'

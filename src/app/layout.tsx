@@ -25,6 +25,7 @@ export default function RootLayout({
       <body
         className={`${fontPoppins.className} antialiased`}
         suppressHydrationWarning={true}
+        id="root"
       >
         <main className="container mx-auto bg-background min-h-screen text-white">
           <Navbar />
