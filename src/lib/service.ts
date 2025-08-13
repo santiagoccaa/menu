@@ -1,4 +1,4 @@
-import { Category, Product } from "@/types/product"
+import { Category, Ofert, Product } from "@/types/product"
 import { supabase } from "./client"
 
 // This functions using in Modules/AdminPage
@@ -45,3 +45,14 @@ export async function EditCategory(id: number, newName: string) {
     await supabase.from("categorias").update({ name: newName }).eq("id", id)
 }
 
+// ---------- ADD OFERT
+
+export async function addOfert({ id, type, ofert }: Ofert) {
+    await supabase.from("productos").update({ tipo_oferta: type, oferta: ofert }).eq("id", id)
+}
+
+// ---------- EDIT OFERT
+
+export async function editOfert(id: number) {
+    await supabase.from("productos").update({ tipo_oferta: "", oferta: "" }).eq("id", id)
+}
