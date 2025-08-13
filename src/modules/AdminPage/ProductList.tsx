@@ -1,7 +1,7 @@
 "use client"
 
 import { deleteProduct, EditProduct, fetchProducts } from '@/lib/service'
-import { Product } from '@/types/product'
+import { ModalProps, Product } from '@/types/product'
 import Image from 'next/image'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import AddProducts from './components/AddProducts'
@@ -22,12 +22,7 @@ const ProductList = () => {
     const [editProductData, setEditProductData] = useState<Partial<Product>>({})
     const [loading, setLoading] = useState(false)
     const [openModal, setOpenModal] = useState(false)
-    const [selectedProduct, setSelectedProduct] = useState<{
-        id: number;
-        name: string;
-        image: string;
-        cost: number
-    } | null>(null);
+    const [selectedProduct, setSelectedProduct] = useState<ModalProps | null>(null);
 
     const editImage = useRef<HTMLInputElement>(null)
 
@@ -133,15 +128,33 @@ const ProductList = () => {
                                     </>
                                     :
                                     <>
-                                        <div className="w-40">
+                                        <div className="w-40 relative">
                                             {product.image && (
                                                 <Image src={product.image} width={300} height={300} alt="asd" className='w-full h-40' />
                                             )}
+                                            {
+                                                product.tipo_oferta === "promocion"
+                                                &&
+                                                <h2 className='absolute bottom-0 opacity-80 bg-red-400 w-full text-xl font-bold'>{product.oferta}</h2>
+                                            }
                                         </div>
                                         <div className='flex flex-col text-left pl-4'>
                                             <h2 className='text-xl font-bold capitalize'>{product.name}</h2>
                                             <p className='text-sm'>{product.ingredients}</p>
-                                            <h2 className='text-lg font-bold'>$ {product.cost}</h2>
+                                            <div className='text-lg font-bold flex gap-2'>
+                                                {product.tipo_oferta === "descuento"
+                                                    ?
+                                                    <>
+                                                        <h3 className='flex gap-2 line-through text-gray-400'>${product.cost}
+
+                                                        </h3>
+                                                        <span className='text-red-500'>
+                                                            ${product.cost - (product.cost * (Number(product.oferta) / 100))}
+                                                        </span>
+                                                    </>
+                                                    :
+                                                    product.cost}
+                                            </div>
                                         </div>
                                     </>
                                 }
@@ -234,7 +247,9 @@ const ProductList = () => {
                                                         id: product.id!,
                                                         name: product.name,
                                                         image: product.image!,
-                                                        cost: product.cost
+                                                        cost: product.cost,
+                                                        ofert: product.oferta!,
+                                                        type_ofert: product.tipo_oferta!
                                                     })
                                                     setOpenModal(!openModal)
                                                 }}

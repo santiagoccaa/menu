@@ -2,6 +2,8 @@ import Modal from 'react-modal'
 import { RiCloseLargeFill } from "react-icons/ri";
 import Image from 'next/image';
 import React, { useState } from 'react';
+import { addOfert, editOfert } from '@/lib/service';
+import { Ofert } from '@/types/product';
 
 const customStyles = {
     content: {
@@ -30,6 +32,8 @@ interface ModalProps {
         name: string;
         image: string;
         cost: number;
+        ofert: string;
+        type_ofert: string
     } | null;
 }
 
@@ -37,14 +41,13 @@ const ModalProduct = ({ closeModal, openModal, product }: ModalProps) => {
     // Input Type
     const [inputType, setInputType] = useState("hidden");
     // Offert save
-    const [ofert, setOfert] = useState<number | string | null>(null)
+    const [ofert, setOfert] = useState<number | string>("")
     // Input Value
     const [inputValue, setInputValue] = useState<string | number>("");
+    // Type ofert
+    const [typeOfert, setTypeOfert] = useState("")
 
     if (!product) return
-
-    const { id, name, image, cost } = product
-    console.log(id);
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
@@ -52,10 +55,12 @@ const ModalProduct = ({ closeModal, openModal, product }: ModalProps) => {
             setInputType("text");
             setInputValue("");
             setOfert("")
+            setTypeOfert("promocion")
         } else if (value === "descuento") {
             setInputType("number");
             setInputValue("");
             setOfert("")
+            setTypeOfert("descuento")
         }
     };
 
@@ -84,34 +89,33 @@ const ModalProduct = ({ closeModal, openModal, product }: ModalProps) => {
             const currentValue = String(inputValue);
             const formattedValue = formatTextInput(value, currentValue);
             setInputValue(formattedValue);
+            setOfert(formattedValue); // actualizar el estado ofert
         } else if (inputType === "number") {
-            if (value === "" || value === null || value === undefined) {
-                setInputValue("");
-            } else {
-                const numValue = Number(value);
-                setInputValue(isNaN(numValue) ? "" : numValue);
-            }
+            const numValue = Number(value);
+            setInputValue(isNaN(numValue) ? "" : numValue);
+            setOfert(isNaN(numValue) ? "" : numValue); // actualizar ofert
         }
     };
 
-    const handleSaveOfert = () => {
+    const handleSaveOfert = async ({ id, type, ofert }: Ofert) => {
         setOfert(inputValue)
+        addOfert({ id, type, ofert })
     }
 
     const newPrice =
         inputType === "number" && ofert
-            ? cost - (cost * (Number(ofert) / 100))
+            ? product.cost - (product.cost * (Number(ofert) / 100))
             : null;
 
     return (
         <Modal
             isOpen={openModal}
             style={customStyles}
-            contentLabel={name}
+            contentLabel={product.name}
         >
             <div className='relative w-[28rem] h-auto py-4 bg-gray-900 text-white'>
                 <div className='flex justify-between p-2'>
-                    <h2 className='text-xl font-bold'>{name}</h2>
+                    <h2 className='text-xl font-bold'>{product.name}</h2>
                     <button className='absolute top-2 right-2 cursor-pointer hover:-rotate-90 transition-all duration-300' onClick={() => {
                         closeModal()
                         setOfert("")
@@ -124,8 +128,8 @@ const ModalProduct = ({ closeModal, openModal, product }: ModalProps) => {
                 <div className='flex justify-center items-center w-ful'>
                     <div className='relative w-40'>
                         <Image
-                            src={image}
-                            alt={name}
+                            src={product.image}
+                            alt={product.name}
                             width={200}
                             height={200}
                             className="mx-auto"
@@ -142,33 +146,44 @@ const ModalProduct = ({ closeModal, openModal, product }: ModalProps) => {
                 <div className='w-full text-center'>
                     {inputType === "number" && newPrice ? (
                         <div className="flex gap-2 justify-center items-center">
-                            <span className="line-through text-gray-400">${cost}</span>
+                            <span className="line-through text-gray-400">${product.cost}</span>
                             <span className="text-green-400 font-bold">
                                 ${newPrice.toFixed(2)}
                             </span>
                         </div>
                     ) : (
-                        <h2 className="text-white">${cost}</h2>
+                        <div className="flex justify-center w-full ">
+                            {product.ofert && product.type_ofert === "descuento"
+                                ?
+                                <>
+                                    $<h2 className='line-through text-gray-500 mr-2 text-xl'>{product.cost}</h2>
+                                    <span className='text-green-400 text-xl'>${product.cost - (product.cost * (Number(product.ofert) / 100))}</span>
+                                </>
+                                :
+                                product.cost
+                            }
+                        </div>
                     )}
                 </div>
                 <div className='absolute top-8 right-8 w-20 h-20 rounded-full bg-white text-red-400 flex justify-center items-center text-2xl font-bold'>
-                    {ofert && inputType === "number"
-                        ?
-                        <p>{ofert}%</p>
-                        :
-                        <p>{ofert}</p>
+                    {ofert && inputType === "number" || product.type_ofert === "descuento"
+                        &&
+                        <p>{product.ofert ? product.ofert : ofert}%</p>
                     }
                 </div>
 
                 <div className="flex gap-4 mt-4 justify-center items-center">
-                    <select
-                        className="text-gray-800 bg-white"
-                        onChange={handleChange}
-                    >
-                        <option hidden>Oferta</option>
-                        <option value="descuento">Descuento</option>
-                        <option value="promocion">Promocion</option>
-                    </select>
+                    {
+                        !product.ofert &&
+                        <select
+                            className="text-gray-800 bg-white"
+                            onChange={handleChange}
+                        >
+                            <option hidden>Oferta</option>
+                            <option value="descuento">Descuento</option>
+                            <option value="promocion">Promocion</option>
+                        </select>
+                    }
 
                     <input
                         type={inputType}
@@ -180,12 +195,25 @@ const ModalProduct = ({ closeModal, openModal, product }: ModalProps) => {
                     />
                 </div>
                 <div className='flex pt-4 w-full justify-center items-center'>
-                    <button
-                        className='bg-red-400 rounded-lg p-2'
-                        onClick={handleSaveOfert}
-                    >
-                        Aplicar
-                    </button>
+                    {
+                        !product.ofert ?
+                            <button
+                                className='bg-sky-400 rounded-lg p-2 cursor-pointer'
+                                onClick={() => {
+                                    handleSaveOfert({ id: product.id, type: typeOfert, ofert })
+                                }}
+                            >
+                                Aplicar
+                            </button>
+
+                            :
+                            <button
+                                className='bg-red-400 rounded-lg p-2 cursor-pointer'
+                                onClick={() => editOfert(product.id)}
+                            >
+                                Elimar Oferta
+                            </button>
+                    }
                 </div>
             </div>
         </Modal>
