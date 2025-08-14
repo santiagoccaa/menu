@@ -4,6 +4,7 @@ import Image from 'next/image';
 import React, { useState } from 'react';
 import { addOfert, editOfert } from '@/lib/service';
 import { Ofert } from '@/types/product';
+import { useMenu } from '@/hook/useMenu';
 
 const customStyles = {
     content: {
@@ -25,8 +26,6 @@ const customStyles = {
 Modal.setAppElement('#root');
 
 interface ModalProps {
-    closeModal: () => void
-    openModal: boolean
     product: {
         id: number;
         name: string;
@@ -37,7 +36,9 @@ interface ModalProps {
     } | null;
 }
 
-const ModalProduct = ({ closeModal, openModal, product }: ModalProps) => {
+const ModalProduct = ({ product }: ModalProps) => {
+
+    const {openModal, handleClickModal} = useMenu()
     // Input Type
     const [inputType, setInputType] = useState("hidden");
     // Offert save
@@ -117,7 +118,7 @@ const ModalProduct = ({ closeModal, openModal, product }: ModalProps) => {
                 <div className='flex justify-between p-2'>
                     <h2 className='text-xl font-bold'>{product.name}</h2>
                     <button className='absolute top-2 right-2 cursor-pointer hover:-rotate-90 transition-all duration-300' onClick={() => {
-                        closeModal()
+                        handleClickModal()
                         setOfert("")
                         setInputType("hidden")
                         setInputValue("")

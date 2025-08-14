@@ -1,6 +1,8 @@
+
 import { Menu } from "@/modules";
 
 export default function Home() {
+
   return (
     <>
       <header className="flext text-center p-4">

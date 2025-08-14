@@ -1,10 +1,9 @@
 "use client"
 
-import { deleteProduct, EditProduct, fetchProducts } from '@/lib/service'
+import { deleteProduct, EditProduct } from '@/lib/service'
 import { ModalProps, Product } from '@/types/product'
 import Image from 'next/image'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import AddProducts from './components/AddProducts'
+import React, { useEffect, useRef, useState } from 'react'
 import { TbEdit, TbLoader2 } from "react-icons/tb";
 import { AiFillSetting } from "react-icons/ai";
 import { GoTrash } from "react-icons/go";
@@ -12,28 +11,30 @@ import { useParams } from 'next/navigation'
 import { MdOutlineSaveAlt, MdOutlineNotInterested, MdOutlineDiscount } from "react-icons/md";
 import { supabase } from '@/lib/client'
 import ModalProduct from '@/components/modal/Modal'
+import { useMenu } from '@/hook/useMenu'
+import AddProducts from './components/AddProducts'
 
 const ProductList = () => {
     const categoria = useParams().slug as string
 
-    const [productList, setProductList] = useState<Product[]>([])
+    const { handleClickModal, getProducts } = useMenu()
+
+    const [productList, setProductList] = useState<Product[]>()
     const [editProductId, setEditProductId] = useState<number | null>(null)
     const [editProduct, setEditProduct] = useState<number | null>(null)
     const [editProductData, setEditProductData] = useState<Partial<Product>>({})
     const [loading, setLoading] = useState(false)
-    const [openModal, setOpenModal] = useState(false)
     const [selectedProduct, setSelectedProduct] = useState<ModalProps | null>(null);
 
     const editImage = useRef<HTMLInputElement>(null)
 
-    const getProducts = useCallback(async () => {
-        const data = await fetchProducts(categoria)
-        if (data) setProductList(data)
-    }, [categoria])
-
     useEffect(() => {
-        getProducts()
-    }, [getProducts])
+        const fetchData = async () => {
+            const products = await getProducts(categoria);
+            setProductList(products)
+        };
+        fetchData();
+    }, [getProducts, categoria]);
 
     const toggleEdit = (idx: number) => {
         setEditProductId(prev => (prev === idx ? null : idx))
@@ -43,14 +44,14 @@ const ProductList = () => {
         await supabase.from('productos').update({ stock: stock }).eq("id", id)
     }
 
+    if(!productList) return
+
     return (
         <div>
-            <AddProducts onSuccess={getProducts} category={categoria} />
+            <AddProducts category={categoria} /> 
 
             {/* Modal Ofert */}
             <ModalProduct
-                openModal={openModal}
-                closeModal={() => setOpenModal(!openModal)}
                 product={selectedProduct}
             />
             <div className="w-full border-t-2 border-white mt-4 px-4">
@@ -182,7 +183,7 @@ const ProductList = () => {
                                                             }
                                                             setTimeout(() => {
                                                                 setEditProduct(null)
-                                                                getProducts()
+                                                                getProducts(categoria)
                                                                 setLoading(false)
                                                             }, 1200);
                                                         }}
@@ -232,7 +233,7 @@ const ProductList = () => {
                                                     if (product.id) {
                                                         hiddenProduct(product.id, !product.stock)
                                                         setTimeout(() => {
-                                                            getProducts()
+                                                            getProducts(categoria)
                                                         }, 1000);
                                                     }
                                                 }}
@@ -251,7 +252,7 @@ const ProductList = () => {
                                                         ofert: product.oferta!,
                                                         type_ofert: product.tipo_oferta!
                                                     })
-                                                    setOpenModal(!openModal)
+                                                    handleClickModal()
                                                 }}
                                             >
                                                 <MdOutlineDiscount size={20} />

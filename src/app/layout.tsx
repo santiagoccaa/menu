@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import { MenuProvider } from "@/context/MenuContext";
 
 const fontPoppins = Poppins({
   variable: "--font-geist-sans",
   subsets: ["latin"],
   weight: ["300", "400", "600", "800"]
 });
-
 
 export const metadata: Metadata = {
   title: "Menu",
@@ -21,16 +21,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body
         className={`${fontPoppins.className} antialiased`}
         suppressHydrationWarning={true}
         id="root"
       >
-        <main className="container mx-auto bg-background min-h-screen text-white">
-          <Navbar />
-          {children}
-        </main>
+        <MenuProvider>
+          <main className="container mx-auto bg-background min-h-screen text-white">
+            <Navbar />
+            {children}
+          </main>
+        </MenuProvider>
       </body>
     </html>
   );
