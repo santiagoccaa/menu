@@ -24,7 +24,6 @@ export default function RootLayout({
     <html lang="es">
       <body
         className={`${fontPoppins.className} antialiased`}
-        suppressHydrationWarning={true}
         id="root"
       >
         <MenuProvider>

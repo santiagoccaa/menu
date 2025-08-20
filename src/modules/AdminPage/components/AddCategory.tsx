@@ -5,11 +5,7 @@ import { Category } from "@/types/product";
 import { FormEvent, useState } from "react";
 import { TbLoader2 } from "react-icons/tb";
 
-interface AddCategoryProp {
-    onSuccess: () => void
-}
-
-const AddCategory = ({ onSuccess }: AddCategoryProp) => {
+const AddCategory = () => {
     const [isLoading, setIsLoading] = useState(false)
     const [formCategory, setFormCategory] = useState<Category>({
         name: ""
@@ -21,7 +17,6 @@ const AddCategory = ({ onSuccess }: AddCategoryProp) => {
 
         try {
             await saveCategory(formCategory)
-            if (onSuccess) onSuccess()
             setTimeout(() => {
                 setFormCategory({ name: "" })
                 setIsLoading(false)

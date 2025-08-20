@@ -7,19 +7,19 @@ import React, { useEffect, useRef, useState } from 'react'
 import { TbEdit, TbLoader2 } from "react-icons/tb";
 import { AiFillSetting } from "react-icons/ai";
 import { GoTrash } from "react-icons/go";
-import { useParams } from 'next/navigation'
 import { MdOutlineSaveAlt, MdOutlineNotInterested, MdOutlineDiscount } from "react-icons/md";
 import { supabase } from '@/lib/client'
 import ModalProduct from '@/components/modal/Modal'
 import { useMenu } from '@/hook/useMenu'
 import AddProducts from './components/AddProducts'
+import { useParams } from 'next/navigation'
 
 const ProductList = () => {
-    const categoria = useParams().slug as string
 
-    const { handleClickModal, getProducts } = useMenu()
+    const categoryURL = useParams().slug as string
 
-    const [productList, setProductList] = useState<Product[]>()
+    const { handleClickModal, fetchProductsList, handleFetchProducts } = useMenu()
+
     const [editProductId, setEditProductId] = useState<number | null>(null)
     const [editProduct, setEditProduct] = useState<number | null>(null)
     const [editProductData, setEditProductData] = useState<Partial<Product>>({})
@@ -27,14 +27,6 @@ const ProductList = () => {
     const [selectedProduct, setSelectedProduct] = useState<ModalProps | null>(null);
 
     const editImage = useRef<HTMLInputElement>(null)
-
-    useEffect(() => {
-        const fetchData = async () => {
-            const products = await getProducts(categoria);
-            setProductList(products)
-        };
-        fetchData();
-    }, [getProducts, categoria]);
 
     const toggleEdit = (idx: number) => {
         setEditProductId(prev => (prev === idx ? null : idx))
@@ -44,22 +36,27 @@ const ProductList = () => {
         await supabase.from('productos').update({ stock: stock }).eq("id", id)
     }
 
-    if(!productList) return
+    useEffect(() => {
+        handleFetchProducts(categoryURL)
+    }, [categoryURL, handleFetchProducts])
 
     return (
         <div>
-            <AddProducts category={categoria} /> 
+            {/* TODO: hacer que la categoria donde se añadiran los productos sea la seleccionada */}
+            <AddProducts category={categoryURL} />
 
             {/* Modal Ofert */}
             <ModalProduct
                 product={selectedProduct}
             />
             <div className="w-full border-t-2 border-white mt-4 px-4">
-                {productList.length === 0 ? (
+
+                {fetchProductsList.length === 0
+                    ?
                     <p className="text-white text-sm italic mt-4">No hay productos registrados.</p>
-                ) : (
+                    :
                     <div className="text-white grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {productList.map((product, idx) => (
+                        {fetchProductsList.map((product, idx) => (
                             <div key={idx} className={`relative py-2 border-b border-white text-center flex bg-gray-800 rounded-lg p-2 ${!product.stock && 'opacity-70 grayscale-50'}`}>
                                 {editProduct === idx
                                     ?
@@ -183,7 +180,6 @@ const ProductList = () => {
                                                             }
                                                             setTimeout(() => {
                                                                 setEditProduct(null)
-                                                                getProducts(categoria)
                                                                 setLoading(false)
                                                             }, 1200);
                                                         }}
@@ -233,7 +229,6 @@ const ProductList = () => {
                                                     if (product.id) {
                                                         hiddenProduct(product.id, !product.stock)
                                                         setTimeout(() => {
-                                                            getProducts(categoria)
                                                         }, 1000);
                                                     }
                                                 }}
@@ -275,7 +270,7 @@ const ProductList = () => {
                             </div>
                         ))}
                     </div>
-                )}
+                }
             </div>
         </div >
     )

@@ -1,19 +1,25 @@
 "use client"
 
-import { fetchProducts } from "@/lib/service";
-import { Product } from "@/types/product";
+import { fetchCategories, fetchProducts } from "@/lib/service";
+import { Category, Product } from "@/types/product";
 import { createContext, ReactNode, useState } from "react";
 
 interface MenuContextTypes {
     handleClickModal: () => void
     openModal: boolean
-    getProducts: (category: string) => Promise<Product[] | undefined>
+    handleFetchProducts: (categoria: string) => Promise<void>
+    fetchProductsList: Product[]
+    handleFectAllCategoryes: () => Promise<void>
+    AllCategoryes: Category[]
 }
 
 const MenuContext = createContext<MenuContextTypes>({
     handleClickModal: () => { },
     openModal: false,
-    getProducts: () => Promise.resolve([] as Product[])
+    handleFetchProducts: async () => { },
+    fetchProductsList: [],
+    handleFectAllCategoryes: async () => { },
+    AllCategoryes: [],
 });
 
 interface MenuProviderProps {
@@ -22,22 +28,34 @@ interface MenuProviderProps {
 
 const MenuProvider = ({ children }: MenuProviderProps) => {
     const [openModal, setOpenModal] = useState(false)
+    const [fetchProductsList, setFetchProductsList] = useState<Product[]>([])
+    const [AllCategoryes, setAllCategoryes] = useState<Category[]>([])
 
+    // Abre y cierra el Modal
     const handleClickModal = () => {
         setOpenModal(!openModal)
     }
 
-    const getProducts = async (category: string) =>{
-        const data = await fetchProducts(category)
-        return data
-    }
+    // Trae todos los productos de la categoria respectiva
+    const handleFetchProducts = async (categoria: string): Promise<void> => {
+        const products = await fetchProducts(categoria);
+        setFetchProductsList(products ?? []);
+    };
 
+    // Trae todas las categorias
+    const handleFectAllCategoryes = async () => {
+        const categoryes = await fetchCategories()
+        setAllCategoryes(categoryes ?? [])
+    }
     return (
         <MenuContext.Provider
             value={{
                 handleClickModal,
                 openModal,
-                getProducts
+                handleFetchProducts,
+                fetchProductsList,
+                handleFectAllCategoryes,
+                AllCategoryes
             }}
         >
             {children}
