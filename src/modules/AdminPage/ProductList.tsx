@@ -1,7 +1,7 @@
 "use client"
 
 import { deleteProduct, EditProduct } from '@/lib/service'
-import { ModalProps, Product } from '@/types/product'
+import { Product } from '@/types/product'
 import Image from 'next/image'
 import React, { useEffect, useRef, useState } from 'react'
 import { TbEdit, TbLoader2 } from "react-icons/tb";
@@ -18,13 +18,13 @@ const ProductList = () => {
 
     const categoryURL = useParams().slug as string
 
-    const { handleClickModal, fetchProductsList, handleFetchProducts } = useMenu()
+    const { handleClickModal, fetchProductsList, handleFetchProducts, openModal } = useMenu()
 
     const [editProductId, setEditProductId] = useState<number | null>(null)
     const [editProduct, setEditProduct] = useState<number | null>(null)
     const [editProductData, setEditProductData] = useState<Partial<Product>>({})
     const [loading, setLoading] = useState(false)
-    const [selectedProduct, setSelectedProduct] = useState<ModalProps | null>(null);
+    const [selectedIDProduct, setSelectedIDProduct] = useState<number>(0);
 
     const editImage = useRef<HTMLInputElement>(null)
 
@@ -33,12 +33,18 @@ const ProductList = () => {
     }
 
     const hiddenProduct = async (id: number, stock: boolean) => {
-        await supabase.from('productos').update({ stock: stock }).eq("id", id)
+        const { error } = await supabase
+            .from("productos")
+            .update({ stock })
+            .eq("id", id);
+        if (!error) {
+            handleFetchProducts(categoryURL);
+        }
     }
 
     useEffect(() => {
         handleFetchProducts(categoryURL)
-    }, [categoryURL, handleFetchProducts])
+    }, [handleFetchProducts, categoryURL, openModal])
 
     return (
         <div>
@@ -46,9 +52,15 @@ const ProductList = () => {
             <AddProducts category={categoryURL} />
 
             {/* Modal Ofert */}
-            <ModalProduct
-                product={selectedProduct}
-            />
+            {
+                openModal
+                &&
+                <ModalProduct
+                    _id={selectedIDProduct}
+                    categoria={categoryURL}
+                />
+            }
+
             <div className="w-full border-t-2 border-white mt-4 px-4">
 
                 {fetchProductsList.length === 0
@@ -173,11 +185,13 @@ const ProductList = () => {
                                                                 setLoading(true)
                                                                 EditProduct(
                                                                     product.id, {
-                                                                    name: editProductData.name, ingredients: editProductData.ingredients,
+                                                                    name: editProductData.name,
+                                                                    ingredients: editProductData.ingredients,
                                                                     cost: editProductData.cost,
                                                                     image: editProductData.image ?? product.image
                                                                 })
                                                             }
+                                                            handleFetchProducts(categoryURL)
                                                             setTimeout(() => {
                                                                 setEditProduct(null)
                                                                 setLoading(false)
@@ -228,8 +242,6 @@ const ProductList = () => {
                                                 onClick={() => {
                                                     if (product.id) {
                                                         hiddenProduct(product.id, !product.stock)
-                                                        setTimeout(() => {
-                                                        }, 1000);
                                                     }
                                                 }}
                                             >
@@ -239,15 +251,10 @@ const ProductList = () => {
                                             <button
                                                 className='cursor-pointer text-gray-800 0 hover:scale-110 transition-all duration-300'
                                                 onClick={() => {
-                                                    setSelectedProduct({
-                                                        id: product.id!,
-                                                        name: product.name,
-                                                        image: product.image!,
-                                                        cost: product.cost,
-                                                        ofert: product.oferta!,
-                                                        type_ofert: product.tipo_oferta!
-                                                    })
-                                                    handleClickModal()
+                                                    if (product.id) {
+                                                        setSelectedIDProduct(product.id)
+                                                        handleClickModal()
+                                                    }
                                                 }}
                                             >
                                                 <MdOutlineDiscount size={20} />
@@ -257,6 +264,7 @@ const ProductList = () => {
                                                 className='cursor-pointer text-gray-800 
                                             hover:scale-110 transition-all duration-300'
                                                 onClick={() => {
+                                                    handleFetchProducts(categoryURL)
                                                     if (product.id) {
                                                         deleteProduct(product.id)
                                                     }

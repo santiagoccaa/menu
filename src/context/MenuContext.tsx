@@ -2,7 +2,7 @@
 
 import { fetchCategories, fetchProducts } from "@/lib/service";
 import { Category, Product } from "@/types/product";
-import { createContext, ReactNode, useState } from "react";
+import { createContext, ReactNode, useCallback, useState } from "react";
 
 interface MenuContextTypes {
     handleClickModal: () => void
@@ -32,21 +32,21 @@ const MenuProvider = ({ children }: MenuProviderProps) => {
     const [AllCategoryes, setAllCategoryes] = useState<Category[]>([])
 
     // Abre y cierra el Modal
-    const handleClickModal = () => {
-        setOpenModal(!openModal)
-    }
+    const handleClickModal = useCallback(() => {
+        setOpenModal(prev => !prev)
+    }, [])
 
-    // Trae todos los productos de la categoria respectiva
-    const handleFetchProducts = async (categoria: string): Promise<void> => {
+    const handleFetchProducts = useCallback(async (categoria: string): Promise<void> => {
         const products = await fetchProducts(categoria);
         setFetchProductsList(products ?? []);
-    };
+    }, []);
 
-    // Trae todas las categorias
-    const handleFectAllCategoryes = async () => {
+    // ✅ Envolver en useCallback para evitar recreación
+    const handleFectAllCategoryes = useCallback(async () => {
         const categoryes = await fetchCategories()
         setAllCategoryes(categoryes ?? [])
-    }
+    }, [])
+    
     return (
         <MenuContext.Provider
             value={{

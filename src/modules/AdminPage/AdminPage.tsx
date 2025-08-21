@@ -16,7 +16,7 @@ import { useMenu } from "@/hook/useMenu";
  */
 const AdminPage = () => {
 
-    const {handleFectAllCategoryes, AllCategoryes} = useMenu()
+    const { handleFectAllCategoryes, AllCategoryes } = useMenu()
 
     const [settingsCategory, setSettingsCategory] = useState<number | null>(null)
     const [editCagory, setEditCategory] = useState<number | null>(null);
@@ -25,7 +25,7 @@ const AdminPage = () => {
 
     useEffect(() => {
         handleFectAllCategoryes()
-    })
+    }, [handleFectAllCategoryes])
 
     const toggleEdit = (idx: number) => {
         setSettingsCategory(prev => (prev === idx ? null : idx))
@@ -72,14 +72,14 @@ const AdminPage = () => {
                                                         if (category.id && editCategoryName.trim() !== "") {
                                                             setLoading(true)
                                                             EditCategory(category.id, editCategoryName.trim());
-
+                                                            handleFectAllCategoryes()
                                                             setTimeout(() => {
                                                                 setEditCategory(null);
                                                                 setLoading(false)
                                                             }, 1200)
                                                         }
                                                     }}
-                                                    className="w-full h-full flex justify-center items-center cursor-pointer"
+                                                    className="w-full h-full flex bg-red-500 rounded-full justify-center items-center cursor-pointer"
                                                     disabled={loading && true}
                                                 >
                                                     {loading
@@ -99,7 +99,7 @@ const AdminPage = () => {
                                             }
                                         </div>
                                         <div className={`flex gap-8 px-8 h-full items-center ${settingsCategory !== idx && 'hidden'}`}>
-                                            <button className='cursor-pointer text-gray-800 0 hover:scale-110 transition-all duration-300'>
+                                            <button className='cursor-pointer text-gray-800 hover:scale-110 transition-all duration-300'>
                                                 <TbEdit
                                                     onClick={() => {
                                                         toggleEdit(idx)
@@ -116,6 +116,7 @@ const AdminPage = () => {
                                                         deleteCategory(category.id)
                                                         setEditCategory(null);
                                                         setSettingsCategory(null)
+                                                        handleFectAllCategoryes()
                                                     }
                                                 }}
                                             >

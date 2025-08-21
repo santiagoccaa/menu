@@ -1,11 +1,14 @@
 "use client"
 
+import { useMenu } from "@/hook/useMenu";
 import { saveCategory } from "@/lib/service";
 import { Category } from "@/types/product";
 import { FormEvent, useState } from "react";
 import { TbLoader2 } from "react-icons/tb";
 
 const AddCategory = () => {
+
+    const { handleFectAllCategoryes } = useMenu()
     const [isLoading, setIsLoading] = useState(false)
     const [formCategory, setFormCategory] = useState<Category>({
         name: ""
@@ -20,6 +23,7 @@ const AddCategory = () => {
             setTimeout(() => {
                 setFormCategory({ name: "" })
                 setIsLoading(false)
+                handleFectAllCategoryes()
             }, 500)
         } catch (err) {
             console.error("Error al guardar categoría:", err)
