@@ -14,7 +14,11 @@ export async function saveCategory(category: Category) {
 
 export async function fetchProducts(category: string) {
     const { data, error } = await supabase.from("productos").select("*").eq("category", category).order("id", { ascending: true })
-    if (!error) return data as Product[]
+    if (error || !data) {
+        return [];
+    }
+
+    return data as Product[];
 }
 
 export async function InsertProduct(product: Product) {

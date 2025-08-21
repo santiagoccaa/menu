@@ -1,31 +1,31 @@
 "use client"
 
-import { Category } from "@/types/product"
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { deleteCategory, EditCategory, fetchCategories } from "@/lib/service";
+import { deleteCategory, EditCategory } from "@/lib/service";
 import AddCategory from "./components/AddCategory";
 import { AiFillSetting } from "react-icons/ai";
 import { TbEdit, TbLoader2 } from "react-icons/tb";
 import { GoTrash } from "react-icons/go";
 import { MdOutlineSaveAlt } from "react-icons/md";
+import { useMenu } from "@/hook/useMenu";
 
+/**
+ * Page donde se muestran las categorias
+ * @returns 
+ */
 const AdminPage = () => {
 
-    const [categoryegories, setCategories] = useState<Category[]>([])
+    const { handleFectAllCategoryes, AllCategoryes } = useMenu()
+
     const [settingsCategory, setSettingsCategory] = useState<number | null>(null)
     const [editCagory, setEditCategory] = useState<number | null>(null);
     const [editCategoryName, setEditCategoryName] = useState("")
     const [loading, setLoading] = useState(false)
 
-    const getCategories = async () => {
-        const data = await fetchCategories()
-        if (data) setCategories(data)
-    }
-
     useEffect(() => {
-        getCategories()
-    }, [])
+        handleFectAllCategoryes()
+    }, [handleFectAllCategoryes])
 
     const toggleEdit = (idx: number) => {
         setSettingsCategory(prev => (prev === idx ? null : idx))
@@ -33,14 +33,14 @@ const AdminPage = () => {
 
     return (
         <div className='mx-4 border-t border-white flex flex-col'>
-            <AddCategory onSuccess={getCategories} />
+            <AddCategory />
             {/* TODO: add filter name and date */}
             <div className="w-full border-t-2 border-white mt-4 px-4">
-                {categoryegories.length === 0 ? (
+                {AllCategoryes.length === 0 ? (
                     <p className="text-white text-sm italic mt-4">No hay categoryegorías registradas.</p>
                 ) : (
                     <div className="text-white grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {categoryegories.map((category, idx) => (
+                        {AllCategoryes.map((category, idx) => (
                             <div key={idx} className="relative">
                                 {editCagory === idx
                                     ?
@@ -53,7 +53,9 @@ const AdminPage = () => {
                                         />
                                     </div>
                                     :
-                                    <Link href={`/admin/${category.name}`} className="flex py-2 text-2xl capitalize bg-red-400 h-24 border-b border-white justify-center items-center rounded-lg hover:text-red-400 hover:bg-white transition-all duration-300">
+                                    <Link
+                                        href={`/admin/${category.name}`}
+                                        className="flex py-2 text-2xl capitalize bg-red-400 h-24 border-b border-white justify-center items-center rounded-lg hover:text-red-400 hover:bg-white transition-all duration-300">
                                         {category.name}
                                     </Link>
                                 }
@@ -70,15 +72,14 @@ const AdminPage = () => {
                                                         if (category.id && editCategoryName.trim() !== "") {
                                                             setLoading(true)
                                                             EditCategory(category.id, editCategoryName.trim());
-
+                                                            handleFectAllCategoryes()
                                                             setTimeout(() => {
                                                                 setEditCategory(null);
-                                                                getCategories();
                                                                 setLoading(false)
                                                             }, 1200)
                                                         }
                                                     }}
-                                                    className="w-full h-full flex justify-center items-center cursor-pointer"
+                                                    className="w-full h-full flex bg-red-500 rounded-full justify-center items-center cursor-pointer"
                                                     disabled={loading && true}
                                                 >
                                                     {loading
@@ -98,7 +99,7 @@ const AdminPage = () => {
                                             }
                                         </div>
                                         <div className={`flex gap-8 px-8 h-full items-center ${settingsCategory !== idx && 'hidden'}`}>
-                                            <button className='cursor-pointer text-gray-800 0 hover:scale-110 transition-all duration-300'>
+                                            <button className='cursor-pointer text-gray-800 hover:scale-110 transition-all duration-300'>
                                                 <TbEdit
                                                     onClick={() => {
                                                         toggleEdit(idx)
@@ -115,9 +116,7 @@ const AdminPage = () => {
                                                         deleteCategory(category.id)
                                                         setEditCategory(null);
                                                         setSettingsCategory(null)
-                                                        setTimeout(() => {
-                                                            getCategories();
-                                                        }, 500)
+                                                        handleFectAllCategoryes()
                                                     }
                                                 }}
                                             >

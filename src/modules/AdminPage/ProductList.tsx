@@ -1,64 +1,74 @@
 "use client"
 
-import { deleteProduct, EditProduct, fetchProducts } from '@/lib/service'
-import { ModalProps, Product } from '@/types/product'
+import { deleteProduct, EditProduct } from '@/lib/service'
+import { Product } from '@/types/product'
 import Image from 'next/image'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import AddProducts from './components/AddProducts'
+import React, { useEffect, useRef, useState } from 'react'
 import { TbEdit, TbLoader2 } from "react-icons/tb";
 import { AiFillSetting } from "react-icons/ai";
 import { GoTrash } from "react-icons/go";
-import { useParams } from 'next/navigation'
 import { MdOutlineSaveAlt, MdOutlineNotInterested, MdOutlineDiscount } from "react-icons/md";
 import { supabase } from '@/lib/client'
 import ModalProduct from '@/components/modal/Modal'
+import { useMenu } from '@/hook/useMenu'
+import AddProducts from './components/AddProducts'
+import { useParams } from 'next/navigation'
 
 const ProductList = () => {
-    const categoria = useParams().slug as string
 
-    const [productList, setProductList] = useState<Product[]>([])
+    const categoryURL = useParams().slug as string
+
+    const { handleClickModal, fetchProductsList, handleFetchProducts, openModal } = useMenu()
+
     const [editProductId, setEditProductId] = useState<number | null>(null)
     const [editProduct, setEditProduct] = useState<number | null>(null)
     const [editProductData, setEditProductData] = useState<Partial<Product>>({})
     const [loading, setLoading] = useState(false)
-    const [openModal, setOpenModal] = useState(false)
-    const [selectedProduct, setSelectedProduct] = useState<ModalProps | null>(null);
+    const [selectedIDProduct, setSelectedIDProduct] = useState<number>(0);
 
     const editImage = useRef<HTMLInputElement>(null)
-
-    const getProducts = useCallback(async () => {
-        const data = await fetchProducts(categoria)
-        if (data) setProductList(data)
-    }, [categoria])
-
-    useEffect(() => {
-        getProducts()
-    }, [getProducts])
 
     const toggleEdit = (idx: number) => {
         setEditProductId(prev => (prev === idx ? null : idx))
     }
 
     const hiddenProduct = async (id: number, stock: boolean) => {
-        await supabase.from('productos').update({ stock: stock }).eq("id", id)
+        const { error } = await supabase
+            .from("productos")
+            .update({ stock })
+            .eq("id", id);
+        if (!error) {
+            handleFetchProducts(categoryURL);
+        }
     }
+
+    useEffect(() => {
+        handleFetchProducts(categoryURL)
+    }, [handleFetchProducts, categoryURL, openModal])
 
     return (
         <div>
-            <AddProducts onSuccess={getProducts} category={categoria} />
+            {/* TODO: hacer que la categoria donde se añadiran los productos sea la seleccionada */}
+            <AddProducts category={categoryURL} />
 
             {/* Modal Ofert */}
-            <ModalProduct
-                openModal={openModal}
-                closeModal={() => setOpenModal(!openModal)}
-                product={selectedProduct}
-            />
+            {
+                openModal
+                &&
+                <ModalProduct
+                    _id={selectedIDProduct}
+                    categoria={categoryURL}
+                />
+            }
+
             <div className="w-full border-t-2 border-white mt-4 px-4">
-                {productList.length === 0 ? (
+
+                {fetchProductsList.length === 0
+                    ?
                     <p className="text-white text-sm italic mt-4">No hay productos registrados.</p>
-                ) : (
+                    :
                     <div className="text-white grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {productList.map((product, idx) => (
+                        {fetchProductsList.map((product, idx) => (
                             <div key={idx} className={`relative py-2 border-b border-white text-center flex bg-gray-800 rounded-lg p-2 ${!product.stock && 'opacity-70 grayscale-50'}`}>
                                 {editProduct === idx
                                     ?
@@ -175,14 +185,15 @@ const ProductList = () => {
                                                                 setLoading(true)
                                                                 EditProduct(
                                                                     product.id, {
-                                                                    name: editProductData.name, ingredients: editProductData.ingredients,
+                                                                    name: editProductData.name,
+                                                                    ingredients: editProductData.ingredients,
                                                                     cost: editProductData.cost,
                                                                     image: editProductData.image ?? product.image
                                                                 })
                                                             }
+                                                            handleFetchProducts(categoryURL)
                                                             setTimeout(() => {
                                                                 setEditProduct(null)
-                                                                getProducts()
                                                                 setLoading(false)
                                                             }, 1200);
                                                         }}
@@ -231,9 +242,6 @@ const ProductList = () => {
                                                 onClick={() => {
                                                     if (product.id) {
                                                         hiddenProduct(product.id, !product.stock)
-                                                        setTimeout(() => {
-                                                            getProducts()
-                                                        }, 1000);
                                                     }
                                                 }}
                                             >
@@ -243,15 +251,10 @@ const ProductList = () => {
                                             <button
                                                 className='cursor-pointer text-gray-800 0 hover:scale-110 transition-all duration-300'
                                                 onClick={() => {
-                                                    setSelectedProduct({
-                                                        id: product.id!,
-                                                        name: product.name,
-                                                        image: product.image!,
-                                                        cost: product.cost,
-                                                        ofert: product.oferta!,
-                                                        type_ofert: product.tipo_oferta!
-                                                    })
-                                                    setOpenModal(!openModal)
+                                                    if (product.id) {
+                                                        setSelectedIDProduct(product.id)
+                                                        handleClickModal()
+                                                    }
                                                 }}
                                             >
                                                 <MdOutlineDiscount size={20} />
@@ -261,6 +264,7 @@ const ProductList = () => {
                                                 className='cursor-pointer text-gray-800 
                                             hover:scale-110 transition-all duration-300'
                                                 onClick={() => {
+                                                    handleFetchProducts(categoryURL)
                                                     if (product.id) {
                                                         deleteProduct(product.id)
                                                     }
@@ -274,7 +278,7 @@ const ProductList = () => {
                             </div>
                         ))}
                     </div>
-                )}
+                }
             </div>
         </div >
     )

@@ -1,9 +1,11 @@
 import Modal from 'react-modal'
 import { RiCloseLargeFill } from "react-icons/ri";
 import Image from 'next/image';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { addOfert, editOfert } from '@/lib/service';
-import { Ofert } from '@/types/product';
+import { Ofert, Product } from '@/types/product';
+import { useMenu } from '@/hook/useMenu';
+import { supabase } from '@/lib/client';
 
 const customStyles = {
     content: {
@@ -25,19 +27,15 @@ const customStyles = {
 Modal.setAppElement('#root');
 
 interface ModalProps {
-    closeModal: () => void
-    openModal: boolean
-    product: {
-        id: number;
-        name: string;
-        image: string;
-        cost: number;
-        ofert: string;
-        type_ofert: string
-    } | null;
+    _id: number
+    categoria: string
 }
 
-const ModalProduct = ({ closeModal, openModal, product }: ModalProps) => {
+const ModalProduct = ({ _id, categoria }: ModalProps) => {
+
+    const { handleFetchProducts } = useMenu()
+
+    const { openModal, handleClickModal } = useMenu()
     // Input Type
     const [inputType, setInputType] = useState("hidden");
     // Offert save
@@ -47,7 +45,27 @@ const ModalProduct = ({ closeModal, openModal, product }: ModalProps) => {
     // Type ofert
     const [typeOfert, setTypeOfert] = useState("")
 
-    if (!product) return
+    const [productoOfert, setProductoOfert] = useState<Product | null>(null)
+
+    const [hasOfert, setHasOfert] = useState(false)
+
+    useEffect(() => {
+        if (openModal && _id) {
+            const fetchProductoOferta = async () => {
+                const { data } = await supabase
+                    .from("productos")
+                    .select("*")
+                    .eq("id", _id)
+                    .single()
+
+                setProductoOfert(data)
+                setHasOfert(!!data?.oferta) // 👈 true si ya tiene oferta
+                console.log("que", data.oferta);
+
+            }
+            fetchProductoOferta()
+        }
+    }, [_id, openModal])
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
@@ -99,82 +117,93 @@ const ModalProduct = ({ closeModal, openModal, product }: ModalProps) => {
 
     const handleSaveOfert = async ({ id, type, ofert }: Ofert) => {
         setOfert(inputValue)
-        addOfert({ id, type, ofert })
+        await addOfert({ id, type, ofert })
+        setHasOfert(true)
+        handleFetchProducts(categoria)
     }
+
+    const handleEditOfert = async (id: number) => {
+        editOfert(id)
+        handleFetchProducts(categoria)
+        setHasOfert(false)
+    }
+
+    if (!productoOfert) return null
 
     const newPrice =
         inputType === "number" && ofert
-            ? product.cost - (product.cost * (Number(ofert) / 100))
+            ? productoOfert.cost - (productoOfert.cost * (Number(ofert) / 100))
             : null;
 
     return (
         <Modal
             isOpen={openModal}
             style={customStyles}
-            contentLabel={product.name}
+            contentLabel={productoOfert.name}
         >
             <div className='relative w-[28rem] h-auto py-4 bg-gray-900 text-white'>
                 <div className='flex justify-between p-2'>
-                    <h2 className='text-xl font-bold'>{product.name}</h2>
+                    <h2 className='text-xl font-bold'>{productoOfert.name}</h2>
                     <button className='absolute top-2 right-2 cursor-pointer hover:-rotate-90 transition-all duration-300' onClick={() => {
-                        closeModal()
+                        handleClickModal()
                         setOfert("")
                         setInputType("hidden")
                         setInputValue("")
+                        setProductoOfert(null)
+                        setHasOfert(false)
+                        handleFetchProducts(categoria)
                     }}>
                         <RiCloseLargeFill size={25} />
                     </button>
                 </div>
-                <div className='flex justify-center items-center w-ful'>
+                <div className='flex justify-center items-center w-full'>
                     <div className='relative w-40'>
                         <Image
-                            src={product.image}
-                            alt={product.name}
+                            src={`${productoOfert.image}`}
+                            alt={productoOfert.name}
                             width={200}
                             height={200}
                             className="mx-auto"
                         />
 
-                        {ofert && inputType === "text" &&
+                        {hasOfert && inputType === "text" &&
                             <div className='absolute w-full bottom-0 left-0 p-2 bg-red-400 text-center text-lg font-bold'>
                                 <p>{ofert}</p>
                             </div>
                         }
-
                     </div>
                 </div>
                 <div className='w-full text-center'>
-                    {inputType === "number" && newPrice ? (
+                    {inputType === "number" && newPrice && hasOfert ? (
                         <div className="flex gap-2 justify-center items-center">
-                            <span className="line-through text-gray-400">${product.cost}</span>
+                            <span className="line-through text-gray-400">${productoOfert.cost}</span>
                             <span className="text-green-400 font-bold">
                                 ${newPrice.toFixed(2)}
                             </span>
                         </div>
                     ) : (
                         <div className="flex justify-center w-full ">
-                            {product.ofert && product.type_ofert === "descuento"
+                            {!hasOfert && productoOfert.tipo_oferta === "descuento"
                                 ?
                                 <>
-                                    $<h2 className='line-through text-gray-500 mr-2 text-xl'>{product.cost}</h2>
-                                    <span className='text-green-400 text-xl'>${product.cost - (product.cost * (Number(product.ofert) / 100))}</span>
+                                    $<h2 className='line-through text-gray-500 mr-2 text-xl'>{productoOfert.cost}</h2>
+                                    <span className='text-green-400 text-xl'>${productoOfert.cost - (productoOfert.cost * (Number(productoOfert.oferta) / 100))}</span>
                                 </>
                                 :
-                                product.cost
+                                productoOfert.cost
                             }
                         </div>
                     )}
                 </div>
                 <div className='absolute top-8 right-8 w-20 h-20 rounded-full bg-white text-red-400 flex justify-center items-center text-2xl font-bold'>
-                    {ofert && inputType === "number" || product.type_ofert === "descuento"
-                        &&
-                        <p>{product.ofert ? product.ofert : ofert}%</p>
-                    }
+                    {((hasOfert && inputType === "number") || productoOfert.tipo_oferta === "descuento") && (
+                        <p>{productoOfert.oferta ? productoOfert.oferta : ofert}%</p>
+                    )}
                 </div>
+                {
+                    !hasOfert &&
+                    <div className="flex gap-4 mt-4 justify-center items-center">
 
-                <div className="flex gap-4 mt-4 justify-center items-center">
-                    {
-                        !product.ofert &&
                         <select
                             className="text-gray-800 bg-white"
                             onChange={handleChange}
@@ -183,24 +212,25 @@ const ModalProduct = ({ closeModal, openModal, product }: ModalProps) => {
                             <option value="descuento">Descuento</option>
                             <option value="promocion">Promocion</option>
                         </select>
-                    }
 
-                    <input
-                        type={inputType}
-                        className="rounded-lg bg-white text-gray-800 p-1 w-20"
-                        placeholder={inputType === "number" ? "20%" : "2x1"}
-                        value={inputValue}
-                        onChange={handleInputChange}
-                        maxLength={inputType === "text" ? 3 : undefined}
-                    />
-                </div>
+
+                        <input
+                            type={inputType}
+                            className="rounded-lg bg-white text-gray-800 p-1 w-20"
+                            placeholder={inputType === "number" ? "20%" : "2x1"}
+                            value={inputValue}
+                            onChange={handleInputChange}
+                            maxLength={inputType === "text" ? 3 : undefined}
+                        />
+                    </div>
+                }
                 <div className='flex pt-4 w-full justify-center items-center'>
                     {
-                        !product.ofert ?
+                        !hasOfert ?
                             <button
                                 className='bg-sky-400 rounded-lg p-2 cursor-pointer'
                                 onClick={() => {
-                                    handleSaveOfert({ id: product.id, type: typeOfert, ofert })
+                                    handleSaveOfert({ id: _id, type: typeOfert, ofert })
                                 }}
                             >
                                 Aplicar
@@ -209,9 +239,9 @@ const ModalProduct = ({ closeModal, openModal, product }: ModalProps) => {
                             :
                             <button
                                 className='bg-red-400 rounded-lg p-2 cursor-pointer'
-                                onClick={() => editOfert(product.id)}
+                                onClick={() => handleEditOfert(_id)}
                             >
-                                Elimar Oferta
+                                Eliminar Oferta
                             </button>
                     }
                 </div>

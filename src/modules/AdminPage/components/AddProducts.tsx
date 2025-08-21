@@ -7,11 +7,11 @@ import React, { FormEvent, useRef, useState } from 'react'
 import { TbLoader2 } from 'react-icons/tb'
 
 interface AddProductProp {
-  onSuccess: () => void;
   category:string
 }
 
-const AddProducts = ({ onSuccess, category }: AddProductProp) => {
+const AddProducts = ({ category }: AddProductProp) => {
+
   const [isLoading, setIsLoading] = useState(false)
 
   const [form, setForm] = useState<Product>({
@@ -51,7 +51,6 @@ const AddProducts = ({ onSuccess, category }: AddProductProp) => {
 
     try {
       await InsertProduct(form)
-      if (onSuccess) onSuccess()
       setTimeout(() => {
         setForm({
           name: "",

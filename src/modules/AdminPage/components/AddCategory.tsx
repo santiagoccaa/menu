@@ -1,15 +1,14 @@
 "use client"
 
+import { useMenu } from "@/hook/useMenu";
 import { saveCategory } from "@/lib/service";
 import { Category } from "@/types/product";
 import { FormEvent, useState } from "react";
 import { TbLoader2 } from "react-icons/tb";
 
-interface AddCategoryProp {
-    onSuccess: () => void
-}
+const AddCategory = () => {
 
-const AddCategory = ({ onSuccess }: AddCategoryProp) => {
+    const { handleFectAllCategoryes } = useMenu()
     const [isLoading, setIsLoading] = useState(false)
     const [formCategory, setFormCategory] = useState<Category>({
         name: ""
@@ -21,10 +20,10 @@ const AddCategory = ({ onSuccess }: AddCategoryProp) => {
 
         try {
             await saveCategory(formCategory)
-            if (onSuccess) onSuccess()
             setTimeout(() => {
                 setFormCategory({ name: "" })
                 setIsLoading(false)
+                handleFectAllCategoryes()
             }, 500)
         } catch (err) {
             console.error("Error al guardar categoría:", err)
