@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { deleteCategory, EditCategory } from "@/lib/service";
+import { deleteCategory, EditCategory, EditCategoryProducts } from "@/lib/service";
 import AddCategory from "./components/AddCategory";
 import { AiFillSetting } from "react-icons/ai";
 import { TbEdit, TbLoader2 } from "react-icons/tb";
@@ -25,10 +25,37 @@ const AdminPage = () => {
 
     useEffect(() => {
         handleFectAllCategoryes()
-    }, [handleFectAllCategoryes])
+    }, [handleFectAllCategoryes,])
 
     const toggleEdit = (idx: number) => {
         setSettingsCategory(prev => (prev === idx ? null : idx))
+    }
+
+    // Editar Categoria
+    const handleClickEditCategory = async (id: string, categoriUpdate: string) => {
+        setLoading(true)
+        try {
+            await EditCategory(id, editCategoryName.toLowerCase().trim());
+            await handleFectAllCategoryes();
+            await EditCategoryProducts(categoriUpdate, editCategoryName)
+            setEditCategory(null);
+        } catch (error) {
+            console.error('Error al editar la categoría:', error);
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    // Eliminar Categoria
+    const handleClickDeleteCategory = async (id: string) => {
+        try {
+            await deleteCategory(id)
+            await handleFectAllCategoryes();
+            setEditCategory(null);
+            setSettingsCategory(null)
+        } catch (error) {
+            console.log("Error al Eliminar categoria;", error);
+        }
     }
 
     return (
@@ -47,16 +74,16 @@ const AdminPage = () => {
                                     <div className="p-4 flex gap-2">
                                         <input
                                             type="text"
-                                            value={editCategoryName}
+                                            value={editCategoryName.replace(/_/g, " ")}
                                             onChange={(e) => setEditCategoryName(e.target.value)}
-                                            className="w-full bg-white text-gray-800"
+                                            className="w-full bg-white text-gray-800 capitalize"
                                         />
                                     </div>
                                     :
                                     <Link
                                         href={`/admin/${category.name}`}
-                                        className="flex py-2 text-2xl capitalize bg-red-400 h-24 border-b border-white justify-center items-center rounded-lg hover:text-red-400 hover:bg-white transition-all duration-300">
-                                        {category.name}
+                                        className="flex py-2 text-2xl capitalize bg-red-400 h-36 border-b border-white justify-center items-center rounded-lg hover:text-red-400 hover:bg-white transition-all duration-300">
+                                        {category.name.replace(/_/g, " ")}
                                     </Link>
                                 }
 
@@ -68,17 +95,9 @@ const AdminPage = () => {
                                             {editCagory === idx
                                                 ?
                                                 <button
-                                                    onClick={() => {
-                                                        if (category.id && editCategoryName.trim() !== "") {
-                                                            setLoading(true)
-                                                            EditCategory(category.id, editCategoryName.trim());
-                                                            handleFectAllCategoryes()
-                                                            setTimeout(() => {
-                                                                setEditCategory(null);
-                                                                setLoading(false)
-                                                            }, 1200)
-                                                        }
-                                                    }}
+                                                    onClick={() =>
+                                                        handleClickEditCategory(category.id, category.name)
+                                                    }
                                                     className="w-full h-full flex bg-red-500 rounded-full justify-center items-center cursor-pointer"
                                                     disabled={loading && true}
                                                 >
@@ -111,15 +130,7 @@ const AdminPage = () => {
                                             </button>
                                             <button
                                                 className='cursor-pointer text-gray-800 hover:scale-110 transition-all duration-300'
-                                                onClick={() => {
-                                                    if (category.id) {
-                                                        deleteCategory(category.id)
-                                                        setEditCategory(null);
-                                                        setSettingsCategory(null)
-                                                        handleFectAllCategoryes()
-                                                    }
-                                                }}
-                                            >
+                                                onClick={() => handleClickDeleteCategory(category.id)}>
                                                 <GoTrash size={20} />
                                             </button>
                                         </div>

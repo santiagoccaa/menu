@@ -1,18 +1,21 @@
-import { Category, Ofert, Product } from "@/types/product"
+import { Ofert, Product } from "@/types/product"
 import { supabase } from "./client"
-import { ProductsType } from "@/types/types"
+import { CategorysType, ProductsType } from "@/types/types"
 
 // This functions using in Modules/AdminPage
 
+// Tarer all categorias
 export async function fetchCategories() {
-    const { data, error } = await supabase.from("categorias").select("*").order("id", { ascending: true })
-    if (!error) return data as Category[]
+    const { data, error } = await supabase.from("categorias_menu").select("*").order("id", { ascending: true })
+    if (!error) return data as CategorysType[]
 }
 
-export async function saveCategory(category: Category) {
-    await supabase.from("categorias").insert([category])
+// Guardar Categoria
+export async function saveCategory({ name, id }: CategorysType) {
+    await supabase.from("categorias_menu").insert({ id: id, name: name })
 }
 
+// Traes all products
 export async function fetchProducts(category: string) {
     const { data, error } = await supabase.from("productos").select("*").eq("category", category).order("id", { ascending: true })
     if (error || !data) {
@@ -22,6 +25,7 @@ export async function fetchProducts(category: string) {
     return data as Product[];
 }
 
+// Insertar producto
 export async function insertProduct(product: ProductsType) {
     await supabase.from("productos").insert([product])
 }
@@ -34,8 +38,8 @@ export async function deleteProduct(id: number) {
 }
 
 //Category
-export async function deleteCategory(id: number) {
-    await supabase.from("categorias").delete().eq("id", id)
+export async function deleteCategory(id: string) {
+    await supabase.from("categorias_menu").delete().eq("id", id)
 }
 
 // -----------EDIT
@@ -46,8 +50,13 @@ export async function EditProduct(id: number, product: Partial<Product>) {
 }
 
 //Category
-export async function EditCategory(id: number, newName: string) {
-    await supabase.from("categorias").update({ name: newName }).eq("id", id)
+export async function EditCategory(id: string, newName: string) {
+    await supabase.from("categorias_menu").update({ name: newName }).eq("id", id)
+}
+
+// EDIT CATEGORY PRODUCTS
+export async function EditCategoryProducts(categoriUpdate: string, editCategoryName: string) {
+    await supabase.from("productos_menu").update({ category_product: editCategoryName.toLowerCase().trim() }).eq("category_product", categoriUpdate)
 }
 
 // ---------- ADD OFERT
@@ -61,3 +70,5 @@ export async function addOfert({ id, type, ofert }: Ofert) {
 export async function editOfert(id: number) {
     await supabase.from("productos").update({ tipo_oferta: "", oferta: "" }).eq("id", id)
 }
+
+

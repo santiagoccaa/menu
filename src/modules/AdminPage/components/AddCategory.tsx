@@ -2,7 +2,8 @@
 
 import { useMenu } from "@/hook/useMenu";
 import { saveCategory } from "@/lib/service";
-import { Category } from "@/types/product";
+import { CategorysType } from "@/types/types";
+import { preGenerateId } from "@/utils/utils";
 import { FormEvent, useState } from "react";
 import { TbLoader2 } from "react-icons/tb";
 
@@ -10,7 +11,8 @@ const AddCategory = () => {
 
     const { handleFectAllCategoryes } = useMenu()
     const [isLoading, setIsLoading] = useState(false)
-    const [formCategory, setFormCategory] = useState<Category>({
+    const [formCategory, setFormCategory] = useState<CategorysType>({
+        id: "",
         name: ""
     })
 
@@ -19,9 +21,10 @@ const AddCategory = () => {
         setIsLoading(true)
 
         try {
-            await saveCategory(formCategory)
+            const sanitized = formCategory.name.toLowerCase().trim().replace(/\s+/g, "_")
+            await saveCategory({ id: preGenerateId(), name: sanitized })
             setTimeout(() => {
-                setFormCategory({ name: "" })
+                setFormCategory({ id: "", name: "" })
                 setIsLoading(false)
                 handleFectAllCategoryes()
             }, 500)
