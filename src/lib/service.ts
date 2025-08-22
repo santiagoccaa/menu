@@ -1,5 +1,6 @@
 import { Category, Ofert, Product } from "@/types/product"
 import { supabase } from "./client"
+import { ProductsType } from "@/types/types"
 
 // This functions using in Modules/AdminPage
 
@@ -21,7 +22,7 @@ export async function fetchProducts(category: string) {
     return data as Product[];
 }
 
-export async function InsertProduct(product: Product) {
+export async function insertProduct(product: ProductsType) {
     await supabase.from("productos").insert([product])
 }
 
