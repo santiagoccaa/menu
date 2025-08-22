@@ -1,7 +1,8 @@
 "use client"
 
 import { fetchCategories, fetchProducts } from "@/lib/service";
-import { Category, Product } from "@/types/product";
+import { Product } from "@/types/product";
+import { CategorysType } from "@/types/types";
 import { createContext, ReactNode, useCallback, useState } from "react";
 
 interface MenuContextTypes {
@@ -10,7 +11,7 @@ interface MenuContextTypes {
     handleFetchProducts: (categoria: string) => Promise<void>
     fetchProductsList: Product[]
     handleFectAllCategoryes: () => Promise<void>
-    AllCategoryes: Category[]
+    AllCategoryes: CategorysType[]
 }
 
 const MenuContext = createContext<MenuContextTypes>({
@@ -29,7 +30,7 @@ interface MenuProviderProps {
 const MenuProvider = ({ children }: MenuProviderProps) => {
     const [openModal, setOpenModal] = useState(false)
     const [fetchProductsList, setFetchProductsList] = useState<Product[]>([])
-    const [AllCategoryes, setAllCategoryes] = useState<Category[]>([])
+    const [AllCategoryes, setAllCategoryes] = useState<CategorysType[]>([])
 
     // Abre y cierra el Modal
     const handleClickModal = useCallback(() => {

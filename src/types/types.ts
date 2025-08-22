@@ -19,6 +19,8 @@ export interface ProductsType {
 }
 
 export interface CategorysType {
-    id: number
+    id: string
     name: string
+    date_create?: Date,
+    date_update?: Date
 }
