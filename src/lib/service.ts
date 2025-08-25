@@ -6,13 +6,30 @@ import { CategorysType, ProductsType } from "@/types/types"
 
 // Tarer all categorias
 export async function fetchCategories() {
-    const { data, error } = await supabase.from("categorias_menu").select("*").order("id", { ascending: true })
-    if (!error) return data as CategorysType[]
-}
+    try {
+        const { data, error } = await supabase
+            .from("categorias_menu")
+            .select("*")
+            .order("date_create", { ascending: false })
 
+        if (error) {
+            console.error('Error fetching categories:', error)
+            throw new Error(`Error al cargar categorías: ${error.message}`)
+        }
+
+        return data as CategorysType[]
+    } catch (error) {
+        console.error('Database error:', error)
+        return []
+    }
+}
 // Guardar Categoria
 export async function saveCategory({ name, id }: CategorysType) {
-    await supabase.from("categorias_menu").insert({ id: id, name: name })
+    const { error } = await supabase.from("categorias_menu").insert({ id: id, name: name })
+    if (error) {
+        return { success: false, message: error.code };
+    }
+    return { success: true, message: "Nueva Categoria agregada correctamente" };
 }
 
 // Traes all products
@@ -51,12 +68,21 @@ export async function EditProduct(id: number, product: Partial<Product>) {
 
 //Category
 export async function EditCategory(id: string, newName: string) {
-    await supabase.from("categorias_menu").update({ name: newName }).eq("id", id)
+    const { error } = await supabase.from("categorias_menu").update({ name: newName }).eq("id", id)
+    if (error) {
+        return { success: false, message: error.code };
+    }
+    return { success: true, message: "Categoría actualizada correctamente" };
 }
 
 // EDIT CATEGORY PRODUCTS
 export async function EditCategoryProducts(categoriUpdate: string, editCategoryName: string) {
-    await supabase.from("productos_menu").update({ category_product: editCategoryName.toLowerCase().trim() }).eq("category_product", categoriUpdate)
+    const { error } = await supabase.from("productos_menu").update({ category_product: editCategoryName.toLowerCase().trim() }).eq("category_product", categoriUpdate)
+
+    if (error) {
+        return { success: false, message: error.code };
+    }
+    return { success: true, message: "La categoria se actualizo en todos los productos" };
 }
 
 // ---------- ADD OFERT
